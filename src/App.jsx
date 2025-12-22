@@ -14,7 +14,7 @@ import Cart from './pages/Cart.jsx';
 // Компоненты
 import Header from './components/Header.jsx';
 import Footer from './components/Footer.jsx';
-import Newsletter from './components/Newsletter.jsx';
+import Newsletter from './components/NewsLetter.jsx';
 
 function App() {
   return (
