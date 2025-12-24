@@ -7,52 +7,51 @@ export const useCart = () => useContext(CartContext);
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
 
-  // Загружаем корзину из localStorage при старте
+  // Загружаем из localStorage при запуске
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
-    }
+    const saved = localStorage.getItem('cart');
+    if (saved) setCart(JSON.parse(saved));
   }, []);
 
-  // Сохраняем в localStorage при изменении
+  // Сохраняем при каждом изменении
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product, quantity, selectedSize) => {
-    setCart(prevCart => {
-      const existing = prevCart.find(item => item.id === product.id && item.selectedSize === selectedSize);
-      if (existing) {
-        return prevCart.map(item =>
-          item.id === product.id && item.selectedSize === selectedSize
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
-      return [...prevCart, { ...product, quantity, selectedSize }];
-    });
+ const addToCart = (item) => {
+  setCart(current => {
+    const existing = current.find(cartItem => cartItem.id === item.id && cartItem.size === item.size);
+    if (existing) {
+      return current.map(cartItem => 
+        cartItem.id === item.id && cartItem.size === item.size 
+          ? { ...cartItem, quantity: cartItem.quantity + item.quantity }
+          : cartItem
+      );
+    }
+    return [...current, item];
+  });
+};
+
+  const removeFromCart = (id, size) => {
+    setCart(current => current.filter(item => !(item.id === id && item.size === size)));
   };
 
-  const removeFromCart = (id, selectedSize) => {
-    setCart(prevCart => prevCart.filter(item => !(item.id === id && item.selectedSize === selectedSize)));
-  };
-
-  const updateQuantity = (id, selectedSize, newQuantity) => {
-    if (newQuantity < 1) return;
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.id === id && item.selectedSize === selectedSize ? { ...item, quantity: newQuantity } : item
-      )
-    );
+  const updateQuantity = (id, size, quantity) => {
+    if (quantity < 1) return;
+    setCart(current => current.map(item => 
+      item.id === id && item.size === size ? { ...item, quantity } : item
+    ));
   };
 
   const clearCart = () => setCart([]);
 
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, totalPrice }}>
+    <CartContext.Provider value={{
+      cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice
+    }}>
       {children}
     </CartContext.Provider>
   );
